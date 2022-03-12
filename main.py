@@ -1,19 +1,19 @@
-import socket
+mport socket
 import subprocess
 
 HOST = "192.168.31.252"  # Standard loopback interface address (localhost)
 PORT = 8080  # Port to listen on (non-privileged ports are > 1023)
 
 
-def forwarding(port1):
-    cmd = f"iptables -t nat -A PREROUTING -p tcp --dport 192.168.31.252:{PORT} -j DNAT --to-destination 192.168.31.252:{port1}"
+def forwarding(client, port1):
+    cmd = f"iptables -t nat -A PREROUTING -p tcp --dport {client}:{port1} -j DNAT --to-destination localhost:{port1}"
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     result = p.communicate()[0]
     print(result)
 
 
-def bash(port1, port2):
-    cmd = f'docker run -d --name docker_theia -p {port1}:{port2} -v "$(pwd):/home/project:cached" elswork/theia'
+def bash(port1):
+    cmd = f'docker run -d --name docker_theia -p {port1}:3000 -v "$(pwd):/home/project:cached" elswork/theia'
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     result = p.communicate()[0]
     print(result)
@@ -37,9 +37,11 @@ while True:
     print('Ожидание соединения...')
     connection, client_address = sock.accept()
     print('Подключено к:', client_address)
+    print(client_address[0])
     print(client_address[1])
-    # forwarding(client_address[1])
-    bash(3000, 3000)
+    bash(client_address[1])
+    forwarding(client_address[0], client_address[1])
+
     # # Принимаем данные порциями и ретранслируем их
     # while True:
     #     data = connection.recv(4096)
@@ -54,4 +56,4 @@ while True:
     #         break
 
     # Очищаем соединение
-    connection.close()
+connection.close()
