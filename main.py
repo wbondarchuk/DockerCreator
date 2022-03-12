@@ -2,8 +2,8 @@ import socket
 import subprocess
 
 
-def bash():
-    cmd = 'docker run -d -p 3000:3000 -v "$(pwd):/home/project:cached" elswork/theia'
+def bash(port1=3000, port2=3000):
+    cmd = f'docker run -d -p {port1}:{port2} -v "$(pwd):/home/project:cached" elswork/theia'
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
     result = p.communicate()[0]
     print(result)
