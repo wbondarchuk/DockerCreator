@@ -1,0 +1,10 @@
+Для теста используем команду:
+nc -v localhost 8080 
+потом переходим в браузере на localhost:3000
+
+для очистки используем:
+
+docker ps -a  
+<docker ID>
+docker stop <docker ID> 
+docker rm <docker ID> 
