@@ -8,3 +8,6 @@ docker ps -a
 <docker ID>
 docker stop <docker ID> 
 docker rm <docker ID> 
+
+redirect start:
+sudo python3 redirect.py <listen-port> http://<destination-IP>:<destination-PORT>/
