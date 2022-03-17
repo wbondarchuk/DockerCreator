@@ -1,4 +1,4 @@
-mport socket
+import socket
 import subprocess
 
 HOST = "192.168.31.252"  # Standard loopback interface address (localhost)
