@@ -1,10 +1,11 @@
 import os.path
 import pathlib
 import requests
+import time
 from database import Add_Client, Delete_Conteiner
 
 from pip._vendor import cachecontrol
-from flask import Flask, session, abort, redirect, request
+from flask import Flask, session, abort, redirect, request, Response, stream_with_context
 
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
@@ -27,7 +28,12 @@ flow = Flow.from_client_secrets_file(
 )
 
 
-conteiner_ids = []
+def check_closing_logs():
+    cmd = f'''docker logs ride 2>&1 | grep "Changed application state from 'ready' to 'closing_window'"'''
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+    result = p.communicate()[0].decode("utf-8")[:-1]
+    print(result)
+    return result
 
 
 def docker_run():
@@ -82,21 +88,26 @@ def callback():
     )
 
     session["google_id"] = id_info.get("sub")
-    session["name"] = id_info.get("name")
-    print(id_info.get("email"))
-    username = id_info.get("email")
-    conteiner = docker_run() #это надо бы сделать как глобальную переменную, чтобы потом знать что удалять или как-то иначе
-    conteiner_ids.append(conteiner)
+    session["name"] = id_info.get("email")
+
+    username = session["name"]
+    conteiner = docker_run()  # это надо бы сделать как глобальную переменную, чтобы потом знать что удалять или как-то иначе
+
+    session["conteiner"] = conteiner
+
     Add_Client(username, conteiner)
+    print(f'{session.get("name")} зашел')
     return redirect("/protected_area")
 
 
 @app.route("/logout")
 def logout():
-    conteiner = conteiner_ids[0]
+    print(f'{session.get("name")} вышел')
+    conteiner = session.get("conteiner")
     docker_remove(conteiner)
     Delete_Conteiner(conteiner)
-    conteiner_ids.pop(0)
+    # session.pop("name", None)
+    # session.pop("conteiner", None)
     session.clear()
     return redirect('/')
 
